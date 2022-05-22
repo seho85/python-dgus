@@ -115,7 +115,7 @@ class DataVariable(Control):
 
     
     # DGUSDisplayControl implementation
-    def read_config_data(self):
+    def _read_config_data_implementation(self):
         self.read_config_async()
    
     def send_data(self):

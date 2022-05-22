@@ -143,7 +143,7 @@ class TextVariable(Control):
 
     #DGUSDisplayControl Implementation
    
-    def read_config_data(self):
+    def _read_config_data_implementation(self):
         self.set_config_async()
 
     def set_config_performed_callback(self, data):

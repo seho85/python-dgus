@@ -37,7 +37,7 @@ class SerialCommunication(JsonSerializable):
     current_request : Request = None
 
     wait_for_response_timeout = 1
-    time_send = None
+    time_send = 0
 
     run_com_thread = False
 

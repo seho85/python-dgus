@@ -18,7 +18,7 @@ class Mask(JsonSerializable):
 
     def read_control_config(self):
         for ctrl in self.controls:
-            ctrl.read_config()
+            ctrl.read_config_data()
 
     def send_control_data(self):
         for ctrl in self.controls:

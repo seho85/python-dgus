@@ -44,8 +44,12 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
     def return_nothing_cb(self) -> bytes:
         return bytes()
 
-    @abc.abstractmethod
     def read_config_data(self):
+        if self.config_address != 0xFFFF:
+            self._read_config_data_implementation()
+
+    @abc.abstractmethod
+    def _read_config_data_implementation(self):
         pass
 
     @abc.abstractmethod
