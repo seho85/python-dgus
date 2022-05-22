@@ -7,13 +7,13 @@ from dgus.display.serialization.json_serializable import JsonSerializable
 class Mask(JsonSerializable):
 
     controls = list[Control]
-    com_interface : SerialCommunication = None
+    _com_interface : SerialCommunication = None
     mask_no : int = 0
 
     def __init__(self, mask_no, com_interface : SerialCommunication) -> None:
         self.controls = []
         self.mask_no = mask_no
-        self.com_interface = com_interface
+        self._com_interface = com_interface
 
 
     def read_control_config(self):
@@ -98,7 +98,7 @@ class Mask(JsonSerializable):
             #print(f"ConfigAddress:  {config_address_object}")
             #print(f'Moonraker Data: {moonraker_data_object}')
 
-            ctrl = ctor(self.com_interface, data_address_object, data_length_object,
+            ctrl = ctor(self._com_interface, data_address_object, data_length_object,
             config_address_object, moonraker_data_object)
 
             #TODO: Pass settings
