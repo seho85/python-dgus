@@ -18,7 +18,7 @@ class ControlTypeEnum(Enum):
         return serialization_repr.get(type, "Undefined!")
 
 class Control(JsonSerializable, metaclass=abc.ABCMeta):
-    read_data_callback : Callable[..., bytes]
+    get_control_data_cb : Callable[..., bytes]
 
     data_address : int
     data_length : int
@@ -33,7 +33,7 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
     def __init__(self, control_type, data_address, data_length, config_address, 
     config_length) -> None:
     
-        self.read_data_callback = self.return_nothing_cb
+        self.get_control_data_cb = self.return_nothing_cb
         self.control_type = control_type
         self.data_address = data_address
         self.data_length = data_length
@@ -65,26 +65,7 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
         pass
 
 
-    
-    def get_used_addres_space(self):
-        data_address_space = { self.data_address, self.data_length }
-        config_address_space = { self.config_address, self.config_length }
-
-        used_address_space = list()
-
-        used_address_space.append(self.control_type)
-
-        if self.data_address != 0xFFFF:
-            used_address_space.append(data_address_space)
-
-        if self.config_address != 0xFFFF:
-            used_address_space.append(config_address_space)
-
-        return used_address_space
-
-    
-    
-    def from_json(self, json):
+    def from_json(self, json_data):
         pass
 
     def to_json(self):

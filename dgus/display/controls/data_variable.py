@@ -34,7 +34,7 @@ class DataVariable(Control):
         self.CONFIG_LENGTH)
 
         self.com_interface = comInterface
-        self.read_data_callback = self.get_control_data
+        self.get_control_data_cb = self.get_control_data
 
 
     def read_config_async(self):
@@ -105,7 +105,7 @@ class DataVariable(Control):
         self.com_interface.queue_request(req)
 
     def get_set_value_request(self):
-        data_bytes = self.read_data_callback()
+        data_bytes = self.get_control_data_cb()
         return build_write_vp(self.data_address, data_bytes)
 
 

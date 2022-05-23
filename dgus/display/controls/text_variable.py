@@ -61,7 +61,7 @@ class TextVariable(Control):
         self.com_interface.queue_request(req)
 
     def get_set_text_data_request(self):
-        string_bytes = self.read_data_callback()
+        string_bytes = self.get_control_data_cb()
         
         req_bytes = build_write_vp(self.data_address, string_bytes)
         return req_bytes
