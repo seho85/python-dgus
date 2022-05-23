@@ -209,3 +209,89 @@ def test_spontanous_message_calls_callbacks_which_are_assigned_to_the_address_pr
 
     assert callback1_data == response_data
     assert callback2_data == response_data
+
+@patch("dgus.display.communication.communication_interface.SerialCommunication.open_com_port", return_value = True)
+@patch("dgus.display.communication.communication_interface.SerialCommunication.com_thread_function")
+def test_com_thread_start_stop(comthread_func_mock, open_com_port_mock):
+
+    com = SerialCommunication("wedontcare")
+
+    thread_started = com.start_com_thread()
+
+    while not comthread_func_mock.called:
+        pass
+
+    com.stop()
+
+    assert thread_started
+    assert comthread_func_mock.called
+    assert open_com_port_mock.called
+
+@patch("dgus.display.communication.communication_interface.SerialCommunication.open_com_port", return_value = False)
+def test_com_thread_start_return_false_when_comport_was_not_openend(open_com_port_mock):
+
+    com = SerialCommunication("wedontcare")
+
+    thread_started = com.start_com_thread()
+
+    assert not thread_started
+    assert open_com_port_mock.called
+
+
+def test_communication_interface_json_serialization():
+    serial_port = "portn"
+    com = SerialCommunication(serial_port)
+
+    json = com.to_json()
+
+    com_int_obj = json.get("com_interface")
+
+    assert com_int_obj is not None
+
+    port_obj = com_int_obj.get("serial_port")
+
+    assert port_obj is not None
+    assert str(port_obj) == serial_port
+
+
+    
+def test_communication_interface_json_deserialization_with_valid_json():
+    com_interface_json = {
+            "com_interface" : {
+                "serial_port" : "/dev/testingPort",
+            }
+    }
+    
+    com = SerialCommunication("wedontcare")
+
+    deserialized = com.from_json(com_interface_json)
+
+    assert deserialized
+    assert com._ser.port == "/dev/testingPort"
+
+
+def test_json_deserialization_with_invalid_json_com_interface_entry_missing():
+    com_interface_json = {
+            "here_should_be_serial_port" : {
+                "serial_port" : "/dev/testingPort",
+            }
+    }
+    
+    com = SerialCommunication("wedontcare")
+
+    deserialized = com.from_json(com_interface_json)
+
+    assert not deserialized
+
+def test_json_deserialization_with_invalid_json_com_interface_serial_port_entry_missing():
+    com_interface_json = {
+            "com_interface" : {
+                "here_should_have_been_serial_port" : "/dev/testingPort",
+            }
+    }
+    
+    com = SerialCommunication("wedontcare")
+
+    deserialized = com.from_json(com_interface_json)
+
+    assert not deserialized

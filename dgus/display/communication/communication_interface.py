@@ -13,7 +13,7 @@ from dgus.display.communication.request import Request
 from dgus.display.serialization.json_serializable import JsonSerializable
 
 RESERVED_MEMORY_ADDRESS = 0x0FFF
-
+READ_RESPONSE_SLEEP = 0.02
 
 class ComThreadState(Enum):
     WAIT_FOR_NEW_RESPONSE = 0
@@ -116,7 +116,7 @@ class SerialCommunication(JsonSerializable):
                 if not self.requests.empty():
                     return ComThreadState.SEND_REQUEST
             
-            sleep(0.1)
+            sleep(READ_RESPONSE_SLEEP)
 
 
         if state == ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE:
@@ -192,6 +192,8 @@ class SerialCommunication(JsonSerializable):
             return False
         
         self._ser.setPort(serial_port_object)
+        
+        return True
 
     def to_json(self):
         com_interface_json = {
