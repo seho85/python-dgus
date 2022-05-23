@@ -6,13 +6,15 @@ from dgus.display.serialization.json_serializable import JsonSerializable
 
 @unique
 class ControlTypeEnum(Enum):
+    TESTING_CONTROL = 0
     DATA_VARIABLE = 1
     TEXT_VARIABLE = 2
 
     def get_serialization_repr(type):
         serialization_repr = {
             ControlTypeEnum.DATA_VARIABLE : "DataVariable",
-            ControlTypeEnum.TEXT_VARIABLE : "TextVariable"
+            ControlTypeEnum.TEXT_VARIABLE : "TextVariable",
+            ControlTypeEnum.TESTING_CONTROL : "TestingControl"
         }
 
         return serialization_repr.get(type, "Undefined!")

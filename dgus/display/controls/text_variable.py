@@ -10,39 +10,22 @@ class TextVariable(Control):
 
     CONFIG_LENGTH = 13
        
-    x_pos : int
-    y_pos : int
-    color : int
-    upperleft_x : int
-    upperleft_y : int
-    lowerright_x : int
-    lowerright_y : int
-    text_length : int
-    font0_id : int
-    font1_id : int
-    font_width : int
-    font_height : int
-    encode_mode : int
-    hor_dis : int
-    ver_dis : int
+    x_pos : int = 0
+    y_pos : int = 0
+    color : int = 0
+    upperleft_x : int = 0
+    upperleft_y : int = 0
+    lowerright_x : int = 0
+    lowerright_y : int = 0
+    text_length : int = 0
+    font0_id : int = 0
+    font1_id : int = 0
+    font_width : int = 0
+    font_height : int = 0
+    encode_mode : int = 0
+    hor_dis : int = 0
+    ver_dis : int = 0
 
-
-
-    x_pos = 0
-    y_pos = 0
-    color = 0
-    upperleft_x = 0
-    upperleft_y = 0
-    lowerright_x = 0
-    lowerright_y = 0
-    text_length = 0
-    font0_id = 0
-    font1_id = 0
-    font_width = 0
-    font_height = 0
-    encode_mode = 0
-    hor_dis = 0
-    ver_dis = 0
 
     def __init__(self, comInterface : SerialCommunication, 
         dataAddress:int, configAddress:int, TextLength:int) -> None:
@@ -53,28 +36,27 @@ class TextVariable(Control):
         self.com_interface = comInterface
         
 
-    def set_text_performed_cb(self, data):
+    def text_data_set_response(self, data):
+        #TODO: Check response for confirmation
         pass
 
-    def set_text_async(self):
-        req = Request(self.get_set_text_data_request, self.set_text_performed_cb, "updateText")
-        self.com_interface.queue_request(req)
+           
 
-    def get_set_text_data_request(self):
+    def get_text_data_set_request(self):
         string_bytes = self.get_control_data_cb()
         
         req_bytes = build_write_vp(self.data_address, string_bytes)
         return req_bytes
         
     
-    def config_data_response_cb(self, resp : bytes):
+    def config_data_response_cb(self, response_data : bytes):
 
-        header = resp[0:2]
-        byte_count = resp[2:3]
-        func = resp[3:4]
-        addr = resp[4:6]
-        reg_cnt = resp[6:7]
-        data = resp[7:]
+        header = response_data[0:2]
+        byte_count = response_data[2:3]
+        func = response_data[3:4]
+        addr = response_data[4:6]
+        reg_cnt = response_data[6:7]
+        data = response_data[7:]
 
         
         unpacked_config_data = unpack("!H H H H H H H H H B B B B B B B B", data)
@@ -99,15 +81,9 @@ class TextVariable(Control):
         #print([hex(x) for x in data])
 
 
-    def read_config_async(self):
-        req = Request(self.get_read_config_request, self.config_data_response_cb, "read Config")
-
-        self.com_interface.queue_request(req)
 
     def get_read_config_request(self):
-        address = bytearray(self.config_address.to_bytes(length=2, signed=False, byteorder='big'))
-        req_data = build_read_vp(address, self.CONFIG_LENGTH)
-
+        req_data = build_read_vp(self.config_address, self.CONFIG_LENGTH)
         return req_data
 
        
@@ -144,7 +120,8 @@ class TextVariable(Control):
     #DGUSDisplayControl Implementation
    
     def _read_config_data_implementation(self):
-        self.set_config_async()
+        req = Request(self.get_read_config_request, self.config_data_response_cb, "read Config")
+        self.com_interface.queue_request(req)
 
     def set_config_performed_callback(self, data):
         #print("setConfigPerformedCB....")
@@ -152,7 +129,8 @@ class TextVariable(Control):
         pass
    
     def send_data(self):
-        self.set_text_async()
+        req = Request(self.get_text_data_set_request, self.text_data_set_response, "updateText")
+        self.com_interface.queue_request(req)
 
     def settings_from_json(self):
         pass

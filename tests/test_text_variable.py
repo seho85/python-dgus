@@ -1,0 +1,152 @@
+from struct import pack
+
+from pyparsing import col
+
+from dgus.display.controls.text_variable import TextVariable
+
+
+def get_config_data_read_response():
+    config_data_response = bytearray()
+
+    for fill_byte in range(0,7):
+        config_data_response.append(fill_byte)
+
+
+    data_address = 0x1000
+    x_pos = 1
+    y_pos = 2
+    color = 3
+    upperleft_x = 4
+    upperleft_y = 5
+    lowerright_x = 6
+    lowerright_y = 7
+    text_length = 8
+    font0_id = 9
+    font1_id = 10
+    font_width = 11
+    font_height = 12
+    encode_mode = 13
+    hor_dis = 14
+    ver_dis = 15
+
+
+    config_data_bytes = pack("!H H H H H H H H H B B B B B B B B", 
+        data_address,  
+        x_pos,
+        y_pos,
+        color,
+        upperleft_x,
+        upperleft_y,
+        lowerright_x,
+        lowerright_y,
+        text_length,
+        font0_id,
+        font1_id,
+        font_width,
+        font_height,
+        encode_mode,
+        hor_dis,
+        ver_dis,
+        0)
+
+    config_data_response.extend(config_data_bytes)
+
+    return config_data_response
+
+def test_text_variable_parses_read_config_data_correct():
+
+    config_data_response = bytearray()
+
+    for fill_byte in range(0,7):
+        config_data_response.append(fill_byte)
+
+
+    data_address = 0x1000
+    x_pos = 1
+    y_pos = 2
+    color = 3
+    upperleft_x = 4
+    upperleft_y = 5
+    lowerright_x = 6
+    lowerright_y = 7
+    text_length = 8
+    font0_id = 9
+    font1_id = 10
+    font_width = 11
+    font_height = 12
+    encode_mode = 13
+    hor_dis = 14
+    ver_dis = 15
+
+
+    config_data_bytes = pack("!H H H H H H H H H B B B B B B B B", 
+        data_address,  
+        x_pos,
+        y_pos,
+        color,
+        upperleft_x,
+        upperleft_y,
+        lowerright_x,
+        lowerright_y,
+        text_length,
+        font0_id,
+        font1_id,
+        font_width,
+        font_height,
+        encode_mode,
+        hor_dis,
+        ver_dis,
+        0)
+
+    config_data_response.extend(config_data_bytes)
+
+    textVar = TextVariable(None, 0x1000, 0x4242, 10)
+
+    textVar.config_data_response_cb(config_data_response)
+
+
+    assert textVar.data_address == data_address
+    assert textVar.x_pos == x_pos
+    assert textVar.y_pos == y_pos
+    assert textVar.color == color
+    assert textVar.upperleft_x == upperleft_x
+    assert textVar.upperleft_y == upperleft_y
+    assert textVar.lowerright_x == lowerright_x
+    assert textVar.lowerright_y == lowerright_y
+    assert textVar.text_length == text_length
+    assert textVar.font0_id == font0_id
+    assert textVar.font1_id == font1_id
+    assert textVar.font_height == font_height
+    assert textVar.font_width == font_width
+    assert textVar.encode_mode == encode_mode
+    assert textVar.hor_dis == hor_dis
+    assert textVar.ver_dis == ver_dis
+
+
+def test_textvariable_sends_config_data_correct():
+    awaited_request_bytes = [0x5a, 0xa5, 0x1d, 0x82, 0x42, 0x42, 0x0, 0x1, 0x0, 0x2, 0x0, 0x3, 0x0, 0x4, 0x0, 0x5, 0x0, 0x6, 0x0, 0x7, 0x0, 0x8, 0x0, 0x9, 0xa, 0xb, 0xd, 0xc, 0xe, 0xf, 0x10, 0x0]
+    
+    textVar = TextVariable(None, 0x1000, 0x4242, 10)
+
+    textVar.data_address = 1
+    textVar.x_pos = 2
+    textVar.y_pos = 3
+    textVar.color = 4
+    textVar.upperleft_x = 5
+    textVar.upperleft_y = 6
+    textVar.lowerright_x = 7
+    textVar.lowerright_y = 8
+    textVar.text_length = 9
+    textVar.font0_id = 10
+    textVar.font1_id = 11
+    textVar.font_height = 12
+    textVar.font_width = 13
+    textVar.encode_mode = 14
+    textVar.hor_dis = 15
+    textVar.ver_dis = 16
+
+    request = textVar.get_set_config_data_request()
+
+    assert request == awaited_request_bytes
+
+    
