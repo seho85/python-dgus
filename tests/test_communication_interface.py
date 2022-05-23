@@ -157,3 +157,55 @@ def test_do_serial_communication_calls_spontanous_message_function_when_a_respon
 
     #'response_buffer' should be cleared
     assert 0 == len(com._response_buffer)
+
+
+
+def test_do_serial_communication_calls_cb_on_request_when_response_was_read():
+
+    response_data = bytearray([0x5a, 0xa5, 0x6, 0x83, 0x1f, 0xff, 0x1, 0xff, 0xff])
+
+    com = SerialCommunication("wedontcare")
+    com._response_buffer = bytearray(response_data)
+
+    data_passed_to_response_cb = []
+
+    def response_callback(data : bytes):
+        #global data_passed_to_response_cb
+        nonlocal data_passed_to_response_cb
+        data_passed_to_response_cb = data
+
+    req = Request(None, response_callback, "Testing" )
+
+    com._current_request = req
+
+    returned_state = com.do_serial_communication(ComThreadState.RESPONSE_COMPLETE)
+
+    assert len(com._response_buffer) == 0
+    assert response_data == data_passed_to_response_cb
+    assert returned_state == ComThreadState.SEND_REQUEST
+
+
+def test_spontanous_message_calls_callbacks_which_are_assigned_to_the_address_provided_in_response():
+    response_data = bytearray([0x5a, 0xa5, 0x6, 0x83, 0x0f, 0xff, 0x1, 0xff, 0xff])
+
+    com = SerialCommunication("wedontcare")
+
+    callback1_data = []
+
+    def callback1(data : bytes):
+        nonlocal callback1_data
+        callback1_data = data
+
+    callback2_data = []
+
+    def callback2(data : bytes):
+        nonlocal callback2_data
+        callback2_data = data
+
+    com.register_spontaneous_callback(0x0fff, callback1)
+    com.register_spontaneous_callback(0x0fff, callback2)
+
+    com.spontaneous_message(response_data)
+
+    assert callback1_data == response_data
+    assert callback2_data == response_data

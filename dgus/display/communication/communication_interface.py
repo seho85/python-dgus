@@ -166,7 +166,7 @@ class SerialCommunication(JsonSerializable):
     def spontaneous_message(self, resp : bytes):
         print("Spontanous Response:")
         print([hex(x) for x in resp])
-        address = int.from_bytes(self._response_buffer[4:6], byteorder='big', signed=False)
+        address = int.from_bytes(resp[4:6], byteorder='big', signed=False)
 
         callbacks = self._spontaneous_callbacks.get(address, None)
         if callbacks is not None:
