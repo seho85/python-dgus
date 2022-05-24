@@ -25,16 +25,12 @@ class Mask(JsonSerializable):
             ctrl.send_data()
 
 
-    def print_address_space_usage(self):
-        for ctrl in self.controls:
-            print(ctrl.get_used_addres_space())
-
-
     def from_json(self, json):
         mask_object = json.get("mask")
         if mask_object is None:
             print("Malformed Mask JSON: 'mask' object not found!")
             return False
+            
         mask_index_object = mask_object.get("mask_index")
         if mask_index_object is None:
             print("Malformed Mask JSON: 'mask_index' not found")
@@ -76,11 +72,6 @@ class Mask(JsonSerializable):
                 print("Malformed Mask JSON: No 'config_address' entry found!")
                 return False
 
-            moonraker_data_object = control_object.get("moonraker_data")
-            if moonraker_data_object is None:
-                print("Malformed Mask JSON: No 'moonraker_data' entry found!")
-                return False
-
             controls_ctor_dict = {
                 "DataVariable" : DataVariable,
                 "TextVariable" : TextVariable
@@ -99,7 +90,7 @@ class Mask(JsonSerializable):
             #print(f'Moonraker Data: {moonraker_data_object}')
 
             ctrl = ctor(self._com_interface, data_address_object, data_length_object,
-            config_address_object, moonraker_data_object)
+            config_address_object)
 
             #TODO: Pass settings
             self.controls.append(ctrl)

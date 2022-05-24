@@ -37,17 +37,11 @@ class DataVariable(Control):
         self.get_control_data_cb = self.get_control_data
 
 
-    def read_config_async(self):
-        req = Request(self.get_read_config_request, self.read_config_data_callback,
-        "DataVariable: ReadConfig" )
-        
-        self.com_interface.queue_request(req)
-
     def get_read_config_request(self):
         request_bytes = build_read_vp(self.config_address, self.CONFIG_LENGTH)
         return request_bytes
 
-    def read_config_data_callback(self, response: bytes):
+    def set_config_data_from_response(self, response: bytes):
         data = response[7:]
 
         unpacked_data = unpack(">H H H H B B B B B B B 11s", data)
@@ -75,10 +69,10 @@ class DataVariable(Control):
 
        
     def write_config_async(self):
-        req = Request(self.get_write_config_request, None, "DataVariable: ReadConfig")
+        req = Request(self.build_write_config_request, None, "DataVariable: ReadConfig")
         self.com_interface.queue_request(req)
 
-    def get_write_config_request(self):
+    def build_write_config_request(self):
 
         string_bytes = str.encode(str(self.unit_string), encoding="ascii")
         self.unit_text_len = len(self.unit_string)
@@ -100,10 +94,6 @@ class DataVariable(Control):
 
         return build_write_vp(self.config_address, data)
 
-    def set_value_async(self):
-        req = Request(self.get_set_value_request, None, "DataVariable: Write Data")
-        self.com_interface.queue_request(req)
-
     def get_set_value_request(self):
         data_bytes = self.get_control_data_cb()
         return build_write_vp(self.data_address, data_bytes)
@@ -116,10 +106,14 @@ class DataVariable(Control):
     
     # DGUSDisplayControl implementation
     def _read_config_data_implementation(self):
-        self.read_config_async()
+        req = Request(self.get_read_config_request, self.set_config_data_from_response,
+        "DataVariable: ReadConfig" )
+        
+        self.com_interface.queue_request(req)
    
     def send_data(self):
-        self.set_value_async()
+        req = Request(self.get_set_value_request, None, "DataVariable: Write Data")
+        self.com_interface.queue_request(req)
 
 
     def settings_from_json(self):

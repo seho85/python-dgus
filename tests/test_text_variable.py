@@ -1,6 +1,7 @@
 from struct import pack
 
 from pyparsing import col
+from dgus.display.communication.communication_interface import SerialCommunication
 
 from dgus.display.controls.text_variable import TextVariable
 
@@ -102,7 +103,7 @@ def test_text_variable_parses_read_config_data_correct():
 
     textVar = TextVariable(None, 0x1000, 0x4242, 10)
 
-    textVar.config_data_response_cb(config_data_response)
+    textVar.parse_read_config_data_response(config_data_response)
 
 
     assert textVar.data_address == data_address
@@ -219,9 +220,33 @@ def test_textvariable_settings_to_json_contains_settings_set_text_variable():
     assert int(ver_dis_obj) == textVar.ver_dis
 
 
+def test_textvariable_read_config_data_implementation_adds_request_on_com_interface():
+    com = SerialCommunication("wedontcare")
+    
+    
+    text_var = TextVariable(com, 0x1000, 0x4242, 10)
 
     
+    assert com.requests.qsize() == 0
 
+    text_var._read_config_data_implementation()
+
+    assert com.requests.qsize() == 1
+
+    com.__del__()
+    
+
+def test_textvariable_send_data_adds_request_on_com_interface():
+    com = SerialCommunication("wedontcare")
+    text_var = TextVariable(com, 0x1000, 0x4242, 10)
+
+    assert com.requests.qsize() == 0
+
+    text_var.send_data()
+
+    assert com.requests.qsize() == 1
+
+    com.__del__()
 
 
 

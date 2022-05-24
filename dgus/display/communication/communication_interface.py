@@ -46,6 +46,9 @@ class SerialCommunication(JsonSerializable):
         self._ser.port = serial_port
         self._ser.baudrate = 115200
 
+    def __del__(self):
+        self.requests.queue.clear()
+
     def queue_request(self, request: Request):
         self._mutex.acquire()
         self.requests.put(request)

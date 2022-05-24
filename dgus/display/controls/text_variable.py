@@ -34,6 +34,8 @@ class TextVariable(Control):
         self.CONFIG_LENGTH)
 
         self.com_interface = comInterface
+
+    
         
 
     def text_data_set_response(self, data):
@@ -49,7 +51,7 @@ class TextVariable(Control):
         return req_bytes
         
     
-    def config_data_response_cb(self, response_data : bytes):
+    def parse_read_config_data_response(self, response_data : bytes):
 
         header = response_data[0:2]
         byte_count = response_data[2:3]
@@ -82,7 +84,7 @@ class TextVariable(Control):
 
 
 
-    def get_read_config_request(self):
+    def build_read_config_request(self):
         req_data = build_read_vp(self.config_address, self.CONFIG_LENGTH)
         return req_data
 
@@ -120,7 +122,7 @@ class TextVariable(Control):
     #DGUSDisplayControl Implementation
    
     def _read_config_data_implementation(self):
-        req = Request(self.get_read_config_request, self.config_data_response_cb, "read Config")
+        req = Request(self.build_read_config_request, self.parse_read_config_data_response, "read Config")
         self.com_interface.queue_request(req)
 
     def set_config_performed_callback(self, data):
