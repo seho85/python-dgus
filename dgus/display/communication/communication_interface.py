@@ -41,6 +41,8 @@ class SerialCommunication(JsonSerializable):
 
     _run_com_thread = False
 
+    show_transmission_data = False
+
 
     def __init__(self, serial_port) -> None:
         self._ser.port = serial_port
@@ -97,8 +99,9 @@ class SerialCommunication(JsonSerializable):
                     self._current_request = self.requests.get()
                     # print("processing: " + currentRequest.name)
                     req_bytes = self._current_request.get_request_data()
-                    print("--> ", end='')
-                    print([hex(x) for x in req_bytes])
+                    if self.show_transmission_data:
+                        print("--> ", end='')
+                        print([hex(x) for x in req_bytes])
                     self._ser.write(req_bytes)
                     self._time_send = time()
                     return ComThreadState.WAIT_FOR_NEW_RESPONSE
@@ -139,9 +142,9 @@ class SerialCommunication(JsonSerializable):
 
             # print(f"function: {function}")
             # print(f"address:  {address}")
-
-            print("<-- ", end='')
-            print([hex(x) for x in self._response_buffer])
+            if self.show_transmission_data:
+                print("<-- ", end='')
+                print([hex(x) for x in self._response_buffer])
 
             
             if function == DGUSCmd.READ_VPS:

@@ -146,7 +146,7 @@ def test_textvariable_sends_config_data_correct():
     textVar.hor_dis = 15
     textVar.ver_dis = 16
 
-    request = textVar.get_set_config_data_request()
+    request = textVar.build_write_config_request()
 
     assert request == awaited_request_bytes
 

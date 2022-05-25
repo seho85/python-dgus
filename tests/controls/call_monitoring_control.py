@@ -4,6 +4,7 @@ class CallMonitoringControl(Control):
 
     read_config_data_implementation_was_called = False
     send_data_was_called = False
+    send_config_data_implemeation_was_called = False
 
     call_monitoring_ctrl_json = {
         "call_monitoring_ctrl" :  {
@@ -16,6 +17,9 @@ class CallMonitoringControl(Control):
 
     def _read_config_data_implementation(self):
         self.read_config_data_implementation_was_called = True
+
+    def _send_config_data_implementation(self):
+        self.send_config_data_implemeation_was_called = True
     
     def send_data(self):
         self.send_data_was_called = True

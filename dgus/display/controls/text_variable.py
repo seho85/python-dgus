@@ -80,6 +80,8 @@ class TextVariable(Control):
         self.hor_dis = unpacked_config_data[14]
         self.ver_dis = unpacked_config_data[15]
 
+        self.config_data_has_been_read = True
+
         #print([hex(x) for x in data])
 
 
@@ -91,12 +93,12 @@ class TextVariable(Control):
        
 
     def set_config_async(self):
-        req = Request(self.get_set_config_data_request, self.set_config_performed_callback,
+        req = Request(self.build_write_config_request, self.set_config_performed_callback,
         "setConfig")
 
         self.com_interface.queue_request(req)
 
-    def get_set_config_data_request(self):
+    def build_write_config_request(self):
         data_bytes = pack("!H H H H H H H H H B B B B B B B B", 
         self.data_address,  
         self.x_pos,
@@ -124,6 +126,11 @@ class TextVariable(Control):
     def _read_config_data_implementation(self):
         req = Request(self.build_read_config_request, self.parse_read_config_data_response, "read Config")
         self.com_interface.queue_request(req)
+
+    def _send_config_data_implementation(self):
+        send_config_req = Request(self.build_write_config_request, None, "TextVariable SetConfig")
+        self.com_interface.queue_request(send_config_req)
+
 
     def set_config_performed_callback(self, data):
         #print("setConfigPerformedCB....")

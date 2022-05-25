@@ -110,6 +110,11 @@ class DataVariable(Control):
         "DataVariable: ReadConfig" )
         
         self.com_interface.queue_request(req)
+
+       
+    def _send_config_data_implementation(self):
+        set_config_req = Request(self.build_write_config_request, None, "DataVariable SetConfig")
+        self.com_interface.queue_request(set_config_req)
    
     def send_data(self):
         req = Request(self.get_set_value_request, None, "DataVariable: Write Data")

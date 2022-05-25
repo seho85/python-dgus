@@ -49,9 +49,19 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
     def read_config_data(self):
         if self.config_address != 0xFFFF:
             self._read_config_data_implementation()
+        else:
+            self.config_data_has_been_read = True
+
+    def send_config_data(self):
+        if self.config_address != 0xFFFF:
+            self._send_config_data_implementation()
 
     @abc.abstractmethod
     def _read_config_data_implementation(self):
+        pass
+
+    @abc.abstractmethod
+    def _send_config_data_implementation(self):
         pass
 
     @abc.abstractmethod

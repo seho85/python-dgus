@@ -14,6 +14,7 @@ class Display(JsonSerializable):
     
     #act_mask_idx : int = 0
     active_mask : Mask = None
+    previous_mask : Mask = None
 
     #displayMasks : list[Mask] = []
     
@@ -22,21 +23,51 @@ class Display(JsonSerializable):
     def __init__(self, serial_communication_interface) -> None:
         self.act_mask_idx = 0
         self.serial_communication_interface = serial_communication_interface
+        if serial_communication_interface is not None:
+            serial_communication_interface.register_spontaneous_callback(0x0004, self.display_changed_mask)
+
+    
+    def display_changed_mask(self, data : bytes):
+        mask_bytes = data[7:]
+        mask_index = int.from_bytes(mask_bytes,  byteorder='big')
+
+        if mask_index == 0xFFFF:
+            if self.previous_mask is not None:
+                print(f'Switched to previous Mask index: {self.previous_mask.mask_no}')
+                self.switch_to_mask(self.previous_mask.mask_no)
+               
+        else:
+            mask = self.display_masks.get(mask_index)
+
+            if mask is not None:
+                self.previous_mask = self.active_mask
+                self.active_mask = mask
+            else:
+                print(f'Warning: No DisplayMask for Index {mask_index} registered')
+
 
     def add_mask(self, msk : Mask):
         self.display_masks[msk.mask_no] = msk
 
-    def switch_to_mask(self, mask_idx : int) -> bool:
+    def switch_to_mask(self, mask_idx : int, previous_mask_idx : int = -1) -> bool:
         msk = self.display_masks.get(mask_idx)
+        mask_found = False
         if msk is not None:
+            self.previous_mask = self.active_mask
             self.active_mask = msk
             req = Request(self.get_switch_mask_request, None, "Switch Image")
             self.serial_communication_interface.queue_request(req)
-            return True
+            mask_found = True
 
-        else:
+        if previous_mask_idx >= 0:
+            prev_mask = self.display_masks.get(previous_mask_idx)
+            if prev_mask is not None:
+                self.previous_mask = prev_mask
+
+        if not mask_found:
             print(f"Error: Can't switch to MaskNo {mask_idx}, no Mask found with the MaskNo {mask_idx}")
-            return False
+            
+        return mask_found
 
 
     def get_switch_mask_request(self):
@@ -98,14 +129,22 @@ class Display(JsonSerializable):
                 ctrl.config_data_has_been_read = False
                 ctrl.read_config_data()
 
+        
         while True:
+            all_config_has_been_read = True
+
             for msk in self.display_masks.values():
                 for ctrl in msk.controls:
                     if not ctrl.config_data_has_been_read:
-                        sleep(0.2)
-                        continue
+                        all_config_has_been_read = False
 
-            break
+            if all_config_has_been_read:
+                break
+
+    def write_config_data_for_all_controls(self):
+        for msk in self.display_masks.values():
+            for ctrl in msk.controls:
+                ctrl.send_config_data()
 
     def update_current_mask(self):
         for ctrl in self.active_mask.controls:
