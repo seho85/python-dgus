@@ -1,0 +1,22 @@
+=====
+Usage
+=====
+
+Overview
+--------
+The two main components of this library are:
+
+* *SerialCommunication*
+    * the Communication interface that does the serial data exchanged with the Display. This is done mostly asynchronous.
+* *Display*
+    * the class that wraps all display functions.
+* *Mask*
+    * a display can contains multiple *Mask*
+* *Control*
+    * a *Mask* can contain multiple *Control*
+
+Example
+-------
+
+.. code-block:: python
+
