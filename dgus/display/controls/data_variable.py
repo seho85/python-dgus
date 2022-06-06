@@ -1,3 +1,20 @@
+ # 
+ # This file is part of python-dgus (https://github.com/seho85/python-dgus).
+ # Copyright (c) 2022 Sebastian Holzgreve
+ # 
+ # This program is free software: you can redistribute it and/or modify  
+ # it under the terms of the GNU General Public License as published by  
+ # the Free Software Foundation, version 3.
+ #
+ # This program is distributed in the hope that it will be useful, but 
+ # WITHOUT ANY WARRANTY; without even the implied warranty of 
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ # General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License 
+ # along with this program. If not, see <http://www.gnu.org/licenses/>.
+ #
+ 
 from struct import unpack, pack
 from dgus.display.communication.communication_interface import SerialCommunication
 from dgus.display.controls.control import Control, ControlTypeEnum
@@ -117,9 +134,13 @@ class DataVariable(Control):
         self.com_interface.queue_request(set_config_req)
    
     def send_data(self):
-        req = Request(self.get_set_value_request, None, "DataVariable: Write Data")
-        self.com_interface.queue_request(req)
-
+        if not self.waiting_for_data_response:
+            req = Request(self.get_set_value_request, self.data_was_send, "DataVariable: Write Data")
+            self.waiting_for_data_response = True
+            self.com_interface.queue_request(req)
+        
+    def data_was_send(self, response):
+            self.waiting_for_data_response = False
 
     def settings_from_json(self):
         pass

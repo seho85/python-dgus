@@ -1,3 +1,20 @@
+ # 
+ # This file is part of python-dgus (https://github.com/seho85/python-dgus).
+ # Copyright (c) 2022 Sebastian Holzgreve
+ # 
+ # This program is free software: you can redistribute it and/or modify  
+ # it under the terms of the GNU General Public License as published by  
+ # the Free Software Foundation, version 3.
+ #
+ # This program is distributed in the hope that it will be useful, but 
+ # WITHOUT ANY WARRANTY; without even the implied warranty of 
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ # General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License 
+ # along with this program. If not, see <http://www.gnu.org/licenses/>.
+ #
+ 
 import abc
 from enum import Enum, unique 
 from typing import Callable
@@ -9,15 +26,16 @@ class ControlTypeEnum(Enum):
     TESTING_CONTROL = 0
     DATA_VARIABLE = 1
     TEXT_VARIABLE = 2
-
-    def get_serialization_repr(type):
+    
+    @staticmethod
+    def get_serialization_repr(control_type):
         serialization_repr = {
             ControlTypeEnum.DATA_VARIABLE : "DataVariable",
             ControlTypeEnum.TEXT_VARIABLE : "TextVariable",
             ControlTypeEnum.TESTING_CONTROL : "TestingControl"
         }
 
-        return serialization_repr.get(type, "Undefined!")
+        return serialization_repr.get(control_type, "Undefined!")
 
 class Control(JsonSerializable, metaclass=abc.ABCMeta):
     get_control_data_cb : Callable[..., bytes]
@@ -26,11 +44,11 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
     data_length : int
     config_address : int
     config_length : int
-    moonraker_data : list
 
     control_type : ControlTypeEnum
 
     config_data_has_been_read : bool = False
+    waiting_for_data_response : bool = False
 
     def __init__(self, control_type, data_address, data_length, config_address, 
     config_length) -> None:
