@@ -1,6 +1,5 @@
 {
-    "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true,
+    
     "python.testing.unittestArgs": [
         "-v",
         "-s",
@@ -32,5 +31,10 @@
 
 
     },
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+
+    "pylint.args": ["--rcfile=.pylintrc"],
+    "pylint.path": ["./venv/bin/pylint"]
     
 }

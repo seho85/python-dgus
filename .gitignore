@@ -161,3 +161,5 @@ cython_debug/
 
 cov.xml
 __init__ copy.py
+
+!doc/build
