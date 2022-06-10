@@ -11,14 +11,14 @@ from dgus.display.communication.request import Request
 def test_open_com_port_function_return_true_when_serial_port_was_opened_propery(open_mock):
     com = SerialCommunication("wedontcare")
 
-    assert com.open_com_port()
+    assert com._open_com_port()
 
 @patch("dgus.display.communication.communication_interface.Serial.open", 
 side_effect=SerialException("blubb"))
 def test_open_com_port_function_return_false_when_serial_port_was_not_opened_propery(open_mock):
     com = SerialCommunication("wedontcare")
 
-    assert not com.open_com_port()
+    assert not com._open_com_port()
 
 #@patch("dgus.display.communication.communication_interface.Serial.write", return_value=None)
 def test_do_serial_communication_returns_WAIT_FOR_NEW_RESPONSE_when_called_with_SEND_REQUEST():#write_mock):
@@ -27,7 +27,7 @@ def test_do_serial_communication_returns_WAIT_FOR_NEW_RESPONSE_when_called_with_
     state = ComThreadState.SEND_REQUEST
     awaited_state = ComThreadState.WAIT_FOR_NEW_RESPONSE
 
-    returned_state = com.do_serial_communication(state)
+    returned_state = com._do_serial_communication(state)
 
     assert awaited_state == returned_state
 
@@ -48,7 +48,7 @@ def test_do_serial_communication_sends_request_when_called_with_SEND_REQUEST(wri
     com.queue_request(req)
 
 
-    com.do_serial_communication(state)
+    com._do_serial_communication(state)
 
     call_args = write_mock.call_args.args[0]
 
@@ -67,7 +67,7 @@ def test_do_serial_communication_reads_serial_data_when_at_least_three_bytes_arr
     com = SerialCommunication("wedontcare")
     state = ComThreadState.WAIT_FOR_NEW_RESPONSE
 
-    returned_state = com.do_serial_communication(state)
+    returned_state = com._do_serial_communication(state)
 
     assert read_mock.called
     assert in_waiting_mock.called
@@ -78,7 +78,7 @@ def test_do_serial_communication_reads_serial_data_when_at_least_three_bytes_arr
 def test_do_serial_communication_returs_WAIT_FOR_RESPONSE_TO_COMPLETE_when_WAIT_FOR_NEW_RESPONSE_was_passed_and_no_data_is_availabe_and_no_request_is_queued(in_waiting_mock):
 
     com = SerialCommunication("wedontcare")
-    returned_state = com.do_serial_communication(ComThreadState.WAIT_FOR_NEW_RESPONSE)
+    returned_state = com._do_serial_communication(ComThreadState.WAIT_FOR_NEW_RESPONSE)
 
     assert returned_state == ComThreadState.WAIT_FOR_NEW_RESPONSE
 
@@ -89,7 +89,7 @@ def test_do_serial_communication_returns_SEND_REQUEST_when_WAIT_FOR_NEW_RESPONSE
 
     com = SerialCommunication("wedontcare")
     com.queue_request(Request(None, None, "WeDontCare"))
-    returned_state = com.do_serial_communication(ComThreadState.WAIT_FOR_NEW_RESPONSE)
+    returned_state = com._do_serial_communication(ComThreadState.WAIT_FOR_NEW_RESPONSE)
 
     assert returned_state == ComThreadState.SEND_REQUEST
 
@@ -107,7 +107,7 @@ def test_does_do_serial_communication_returns_RESPONSE_COMPLETE_when_a_complete_
 
     com._response_buffer.clear()
     assert len(com._response_buffer) == 0
-    returned_state = com.do_serial_communication(ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE)
+    returned_state = com._do_serial_communication(ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE)
 
 
     #check that read is called with 'awaited_bytes'
@@ -128,7 +128,7 @@ def test_does_do_serial_communication_returns_WAIT_FOR_RESPONSE_TO_COMPLETE_when
     com = SerialCommunication("wedontcare")
     com._awaited_bytes = 3
 
-    returned_state = com.do_serial_communication(ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE)
+    returned_state = com._do_serial_communication(ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE)
 
 
     assert in_waiting_mock.called
@@ -136,7 +136,7 @@ def test_does_do_serial_communication_returns_WAIT_FOR_RESPONSE_TO_COMPLETE_when
     assert returned_state == ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE
 
 
-@patch("dgus.display.communication.communication_interface.SerialCommunication.spontaneous_message")
+@patch("dgus.display.communication.communication_interface.SerialCommunication._spontaneous_message_received")
 def test_do_serial_communication_calls_spontanous_message_function_when_a_response_from_a_reserved_address_is_read(spontanous_message_mock):
     response_data = bytearray([0x5a, 0xa5, 0x6, 0x83, 0x0f, 0xff, 0x1, 0xff, 0xff])
     
@@ -144,7 +144,7 @@ def test_do_serial_communication_calls_spontanous_message_function_when_a_respon
     com = SerialCommunication("wedontcare")
     com._response_buffer = bytearray(response_data)
 
-    returned_state = com.do_serial_communication(ComThreadState.RESPONSE_COMPLETE)
+    returned_state = com._do_serial_communication(ComThreadState.RESPONSE_COMPLETE)
 
     #when a spontanous message was processed we jump back to collect the message we were awaiting
     assert returned_state == ComThreadState.WAIT_FOR_NEW_RESPONSE
@@ -178,7 +178,7 @@ def test_do_serial_communication_calls_cb_on_request_when_response_was_read():
 
     com._current_request = req
 
-    returned_state = com.do_serial_communication(ComThreadState.RESPONSE_COMPLETE)
+    returned_state = com._do_serial_communication(ComThreadState.RESPONSE_COMPLETE)
 
     assert len(com._response_buffer) == 0
     assert response_data == data_passed_to_response_cb
@@ -205,13 +205,13 @@ def test_spontanous_message_calls_callbacks_which_are_assigned_to_the_address_pr
     com.register_spontaneous_callback(0x0fff, callback1)
     com.register_spontaneous_callback(0x0fff, callback2)
 
-    com.spontaneous_message(response_data)
+    com._spontaneous_message_received(response_data)
 
     assert callback1_data == response_data
     assert callback2_data == response_data
 
-@patch("dgus.display.communication.communication_interface.SerialCommunication.open_com_port", return_value = True)
-@patch("dgus.display.communication.communication_interface.SerialCommunication.com_thread_function")
+@patch("dgus.display.communication.communication_interface.SerialCommunication._open_com_port", return_value = True)
+@patch("dgus.display.communication.communication_interface.SerialCommunication._com_thread_function")
 def test_com_thread_start_stop(comthread_func_mock, open_com_port_mock):
 
     com = SerialCommunication("wedontcare")
@@ -227,7 +227,7 @@ def test_com_thread_start_stop(comthread_func_mock, open_com_port_mock):
     assert comthread_func_mock.called
     assert open_com_port_mock.called
 
-@patch("dgus.display.communication.communication_interface.SerialCommunication.open_com_port", return_value = False)
+@patch("dgus.display.communication.communication_interface.SerialCommunication._open_com_port", return_value = False)
 def test_com_thread_start_return_false_when_comport_was_not_openend(open_com_port_mock):
 
     com = SerialCommunication("wedontcare")

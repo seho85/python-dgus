@@ -61,9 +61,9 @@ class SerialCommunication(JsonSerializable):
     show_transmission_data = False
 
 
-    def __init__(self, serial_port) -> None:
+    def __init__(self, serial_port : str, baudrate : int = 115200) -> None:
         self._ser.port = serial_port
-        self._ser.baudrate = 115200
+        self._ser.baudrate = baudrate
 
     def __del__(self):
         self.requests.queue.clear()
@@ -73,7 +73,7 @@ class SerialCommunication(JsonSerializable):
         self.requests.put(request)
         self._mutex.release()
 
-    def open_com_port(self) -> bool:
+    def _open_com_port(self) -> bool:
         try:
             self._ser.open()
             return True
@@ -82,8 +82,8 @@ class SerialCommunication(JsonSerializable):
             return False
 
     def start_com_thread(self):
-        if self.open_com_port():
-            self._com_thread = threading.Thread(target=self.com_thread_function)
+        if self._open_com_port():
+            self._com_thread = threading.Thread(target=self._com_thread_function)
             self._run_com_thread = True
             self._com_thread.start()
             print("Started serial display communication...")
@@ -96,16 +96,16 @@ class SerialCommunication(JsonSerializable):
             self._com_thread.join()
             print("Stopped serial display communication...")
 
-    def com_thread_function(self):
+    def _com_thread_function(self):
 
         state = ComThreadState.SEND_REQUEST
 
         while self._run_com_thread:
-            state = self.do_serial_communication(state)
+            state = self._do_serial_communication(state)
 
             #sleep(0.2)
 
-    def do_serial_communication(self, state: ComThreadState) -> ComThreadState:
+    def _do_serial_communication(self, state: ComThreadState) -> ComThreadState:
         if state == ComThreadState.SEND_REQUEST:
             #print("SEND_REQUEST")
             self._time_send = time()
@@ -168,7 +168,7 @@ class SerialCommunication(JsonSerializable):
                 if address <= RESERVED_MEMORY_ADDRESS:
                     # we got a spontanous data transmission in between, 
                     # handle it an jump back to reading
-                    self.spontaneous_message(bytearray(self._response_buffer))
+                    self._spontaneous_message_received(bytearray(self._response_buffer))
                     self._response_buffer.clear()
                     state = ComThreadState.WAIT_FOR_NEW_RESPONSE
                     return state
@@ -186,8 +186,8 @@ class SerialCommunication(JsonSerializable):
             
 
     
-    def spontaneous_message(self, resp : bytes):
-        print("Spontanous Response:")
+    def _spontaneous_message_received(self, resp : bytes):
+        print("Spontanous -->", end='')
         print([hex(x) for x in resp])
         address = int.from_bytes(resp[4:6], byteorder='big', signed=False)
 
