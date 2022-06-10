@@ -1,3 +1,5 @@
+.. _serial_communication:
+
 ====================
 Serial Communication
 ====================
@@ -16,6 +18,8 @@ But in the DGUS Tool the controls can be configured to "Auto Upload". If this fe
 activated, the controls send there data directly to the display. Data which is send trough the 
 "Auto Upload" feature is called "Spontanous Data" in the library.
 
+See :ref:`serial_communication_polling`
+
 .. uml::
 
     Display -> Application : Spontanous data
@@ -24,7 +28,10 @@ Both types of data exchange is handled by the *SerialCommunication* class.
 
 The communication over the serial interface is handled asynchronous by *SerialCommunication*
 
-See description below.
+See :ref:`serial_communication_spontanous`
+
+
+.. _serial_communication_polling:
 
 Polling Communication
 =====================
@@ -91,13 +98,14 @@ This handling make the Communication very versatile.
 
     * And handles the response by itself
 
-Please refer to Chaper 6 (Serial Communication Protocol) of the :download:`DGUS Application Development Guide <../vendor/T5L_DGUSII Application Development Guide.pdf>`
-
 The *Protocol* class contains a few convenience functions for creating different types of messages.
 
+Please refer to Chaper 6 (Serial Communication Protocol) of the :download:`DGUS Application Development Guide <../vendor/T5L_DGUSII Application Development Guide.pdf>`
+for an overview how the messages are looking like.
 
 
 
+.. _serial_communication_spontanous:
 
 Spontanous Transmission
 =======================
@@ -108,8 +116,8 @@ This data is allways in the "Read VPs (0x83)" format, which contains the address
 
 To handle this kind of data transmission following a range of reserved address is defined. 
 
-This range is is by default for adresses from 0x0000 to 0x0FFF, so there are 4096 possible addresses
-which can be used for spontanous data.
+**This range is is by default for adresses from 0x0000 to 0x0FFF, so there are 4096 possible addresses
+which can be used for spontanous data.**
 
 The component which is interessed in the spontanous transmission, can register a callback for the 
 address it is interessed in.

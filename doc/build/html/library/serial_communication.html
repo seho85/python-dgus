@@ -47,6 +47,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="class_overview.html">Class Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vendor/vendor_files.html">Vendor Files</a></li>
 </ul>
 
         </div>
@@ -74,7 +75,7 @@
            <div itemprop="articleBody">
              
   <section id="serial-communication">
-<h1>Serial Communication<a class="headerlink" href="#serial-communication" title="Permalink to this headline"></a></h1>
+<span id="id1"></span><h1>Serial Communication<a class="headerlink" href="#serial-communication" title="Permalink to this headline"></a></h1>
 <section id="general">
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline"></a></h2>
 <p>The data exchange over the serial interface is mostly done in polling mode.</p>
@@ -85,15 +86,16 @@ Display -&gt; Application : Response"/>
 <p>But in the DGUS Tool the controls can be configured to “Auto Upload”. If this feature is
 activated, the controls send there data directly to the display. Data which is send trough the
 “Auto Upload” feature is called “Spontanous Data” in the library.</p>
+<p>See <a class="reference internal" href="#serial-communication-polling"><span class="std std-ref">Polling Communication</span></a></p>
 <p class="plantuml">
 <img src="../_images/plantuml-e3732acef816045bf41552df76bf256e16e966a9.png" alt="Display -&gt; Application : Spontanous data"/>
 </p>
 <p>Both types of data exchange is handled by the <em>SerialCommunication</em> class.</p>
 <p>The communication over the serial interface is handled asynchronous by <em>SerialCommunication</em></p>
-<p>See description below.</p>
+<p>See <a class="reference internal" href="#serial-communication-spontanous"><span class="std std-ref">Spontanous Transmission</span></a></p>
 </section>
 <section id="polling-communication">
-<h2>Polling Communication<a class="headerlink" href="#polling-communication" title="Permalink to this headline"></a></h2>
+<span id="serial-communication-polling"></span><h2>Polling Communication<a class="headerlink" href="#polling-communication" title="Permalink to this headline"></a></h2>
 <p>The <em>SerialCommunication</em> class handles the polling data transmission in the following non blocking way.</p>
 <ol class="arabic">
 <li><p>A <em>Request</em> is created</p>
@@ -182,16 +184,17 @@ activated, the controls send there data directly to the display. Data which is s
 </div></blockquote>
 </li>
 </ul>
-<p>Please refer to Chaper 6 (Serial Communication Protocol) of the <a class="reference download internal" download="" href="../_downloads/e0f9b21e11f8d75112417eec86927f5e/T5L_DGUSII%20Application%20Development%20Guide.pdf"><code class="xref download docutils literal notranslate"><span class="pre">DGUS</span> <span class="pre">Application</span> <span class="pre">Development</span> <span class="pre">Guide</span></code></a></p>
 <p>The <em>Protocol</em> class contains a few convenience functions for creating different types of messages.</p>
+<p>Please refer to Chaper 6 (Serial Communication Protocol) of the <a class="reference download internal" download="" href="../_downloads/e0f9b21e11f8d75112417eec86927f5e/T5L_DGUSII%20Application%20Development%20Guide.pdf"><code class="xref download docutils literal notranslate"><span class="pre">DGUS</span> <span class="pre">Application</span> <span class="pre">Development</span> <span class="pre">Guide</span></code></a>
+for an overview how the messages are looking like.</p>
 </section>
 <section id="spontanous-transmission">
-<h2>Spontanous Transmission<a class="headerlink" href="#spontanous-transmission" title="Permalink to this headline"></a></h2>
+<span id="serial-communication-spontanous"></span><h2>Spontanous Transmission<a class="headerlink" href="#spontanous-transmission" title="Permalink to this headline"></a></h2>
 <p>Due the “Auto Upload” feature of a DGUS control, the display may send data over serial interface which was not requested before.</p>
 <p>This data is allways in the “Read VPs (0x83)” format, which contains the address assigned in the DGUS Tool as “Variable Address”</p>
 <p>To handle this kind of data transmission following a range of reserved address is defined.</p>
-<p>This range is is by default for adresses from 0x0000 to 0x0FFF, so there are 4096 possible addresses
-which can be used for spontanous data.</p>
+<p><strong>This range is is by default for adresses from 0x0000 to 0x0FFF, so there are 4096 possible addresses
+which can be used for spontanous data.</strong></p>
 <p>The component which is interessed in the spontanous transmission, can register a callback for the
 address it is interessed in.</p>
 <p>For each address multiple callbacks can be registered.</p>

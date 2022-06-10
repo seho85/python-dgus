@@ -18,6 +18,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Vendor Files" href="../vendor/vendor_files.html" />
     <link rel="prev" title="Serial Communication" href="serial_communication.html" /> 
 </head>
 
@@ -41,9 +42,10 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="serial_communication.html">Serial Communication</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Class Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#diagram">Diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../vendor/vendor_files.html">Vendor Files</a></li>
 </ul>
 
         </div>
@@ -72,10 +74,47 @@
              
   <section id="class-overview">
 <h1>Class Overview<a class="headerlink" href="#class-overview" title="Permalink to this headline"></a></h1>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<p>The <em>Display Application</em> is consists of the following components:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>SerialCommunication</dt><dd><ul>
+<li><dl class="simple">
+<dt>Handles the serial communication with the DGUS Display</dt><dd><ul>
+<li><p>See <a class="reference internal" href="serial_communication.html#serial-communication"><span class="std std-ref">Serial Communication</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Display</dt><dd><ul>
+<li><p>Class that represents the Display</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Mask</dt><dd><ul>
+<li><p>A mask represents a Display Mask (Picture). It can contain multiple Controls</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Control</dt><dd><ul>
+<li><p>Is a base class that every control dervices from can be a Button, Data Display, Numeric Display, a.s.o</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="diagram">
+<h2>Diagram<a class="headerlink" href="#diagram" title="Permalink to this headline"></a></h2>
 <p class="plantuml">
-<img src="../_images/plantuml-2cf46002f5af816671f066dc9e51079e3827859c.png" alt="class Display {
+<img src="../_images/plantuml-854577a3528fbb1f6542ce207073fe81ba76f243.png" alt="class Display {
 }
 
 class Mask {
@@ -91,6 +130,14 @@ class TextVariable {
 
 }
 
+class SerialCommunication {
+
+}
+
+Display -&gt; SerialCommunication : Uses
+Mask -&gt; SerialCommunication : Uses
+Control -&gt; SerialCommunication : Uses
+
 Display &quot;1&quot; *-- &quot;n&quot; Mask : contains
 Mask &quot;1&quot; *-- &quot;n&quot; Control : contains
 
@@ -105,6 +152,7 @@ Control &lt;-- TextVariable : extends"/>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="serial_communication.html" class="btn btn-neutral float-left" title="Serial Communication" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../vendor/vendor_files.html" class="btn btn-neutral float-right" title="Vendor Files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
