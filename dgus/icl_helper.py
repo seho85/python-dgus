@@ -54,7 +54,7 @@ def get_length_in_slots(file_path):
 
 def get_start_slot_from_filename(filename):
     
-    match = re.search('(\d{1,})(?:[a-zA-Z\._-])', filename)
+    match = re.search(r'(\d{1,})(?:[a-zA-Z\._-])', filename)
     #print(file)
     #if(match):
     #    print(match.group(1))

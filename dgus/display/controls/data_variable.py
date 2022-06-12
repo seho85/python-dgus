@@ -140,7 +140,7 @@ class DataVariable(Control):
             self.com_interface.queue_request(req)
         
     def data_was_send(self, response):
-            self.waiting_for_data_response = False
+        self.waiting_for_data_response = False
 
     def settings_from_json(self):
         pass

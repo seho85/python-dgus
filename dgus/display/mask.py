@@ -52,8 +52,8 @@ class Mask(JsonSerializable):
         if mask_index_object is None:
             print("Malformed Mask JSON: 'mask_index' not found")
             return False
-        else:
-            self.mask_no = mask_index_object
+        
+        self.mask_no = mask_index_object
 
         controls_object = mask_object.get("controls")
         if controls_object is None:

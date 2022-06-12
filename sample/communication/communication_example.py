@@ -26,4 +26,3 @@ com_interface.start_com_thread()
 
 com_interface.queue_request(switch_mask_req)
 com_interface.queue_request(req)
-

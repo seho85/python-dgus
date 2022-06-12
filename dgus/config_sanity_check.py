@@ -30,7 +30,7 @@ def deserialize_json_check(disp : Display) -> bool:
     with open(display_json_file) as json_file:
         json_data = json.load(json_file)
         json_ok = disp.from_json(json_data)
-        if(json_ok == True):
+        if json_ok is True:
             print("JSON Config: OK")
 
     return json_ok
@@ -85,7 +85,7 @@ def check_reserved_ram_area() -> bool:
     print("\nChecking reserved address space (for 'Auto Upload')")
     found_reserved_ram_area_conflict = False
     for key, value in data_area_dict.items():
-        if(key < RESERVED_MEMORY_ADDRESS):
+        if key < RESERVED_MEMORY_ADDRESS:
             found_reserved_ram_area_conflict = True
             print(f'{hex(key)} {value} conflicts with reserved RAM address space')
 
@@ -102,11 +102,8 @@ found_overlapping_addresses = print_overlapping_memory_areas(data_area_dict)
 found_reserved_ram_area_conflict = check_reserved_ram_area()
 
 
-if(found_overlapping_addresses == False & found_reserved_ram_area_conflict & json_ok):
+if found_overlapping_addresses is False and found_reserved_ram_area_conflict and json_ok:
     print('\nSanity check passed!')
 else:
     print("\nSanity check FAILED!")
-
-
-    
 

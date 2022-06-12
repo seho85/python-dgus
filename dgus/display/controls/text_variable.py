@@ -23,6 +23,8 @@ from dgus.display.communication.request import Request
 
 class TextVariable(Control):
     
+    # pylint: disable=too-many-instance-attributes
+    # maybe settings should be moved to own @dataclass
     com_interface  : SerialCommunication = None
 
     CONFIG_LENGTH = 13
@@ -70,11 +72,11 @@ class TextVariable(Control):
     
     def parse_read_config_data_response(self, response_data : bytes):
 
-        header = response_data[0:2]
-        byte_count = response_data[2:3]
-        func = response_data[3:4]
-        addr = response_data[4:6]
-        reg_cnt = response_data[6:7]
+        #header = response_data[0:2]
+        #byte_count = response_data[2:3]
+        #func = response_data[3:4]
+        #addr = response_data[4:6]
+        #reg_cnt = response_data[6:7]
         data = response_data[7:]
 
         

@@ -69,9 +69,8 @@ class SerialCommunication(JsonSerializable):
         self.requests.queue.clear()
 
     def queue_request(self, request: Request):
-        self._mutex.acquire()
-        self.requests.put(request)
-        self._mutex.release()
+        with self._mutex:
+            self.requests.put(request)
 
     def _open_com_port(self) -> bool:
         try:
@@ -112,19 +111,17 @@ class SerialCommunication(JsonSerializable):
             with self._mutex:
                 if self.requests.empty():
                     return ComThreadState.WAIT_FOR_NEW_RESPONSE
-                else:
-                    self._current_request = self.requests.get()
-                    # print("processing: " + currentRequest.name)
-                    req_bytes = self._current_request.get_request_data()
-                    if self.show_transmission_data:
-                        print("--> ", end='')
-                        print([hex(x) for x in req_bytes])
-                    self._ser.write(req_bytes)
-                    self._time_send = time()
-                    return ComThreadState.WAIT_FOR_NEW_RESPONSE
+
+                self._current_request = self.requests.get()
+                # print("processing: " + currentRequest.name)
+                req_bytes = self._current_request.get_request_data()
+                if self.show_transmission_data:
+                    print("--> ", end='')
+                    print([hex(x) for x in req_bytes])
+                self._ser.write(req_bytes)
+                self._time_send = time()
+                return ComThreadState.WAIT_FOR_NEW_RESPONSE
                 
-            #    self.mutex.release()
-            #last_send = time()
             
 
         if state == ComThreadState.WAIT_FOR_NEW_RESPONSE:
@@ -149,8 +146,8 @@ class SerialCommunication(JsonSerializable):
                 self._response_buffer.extend(data_read)
                 #state = ComThreadState.RESPONSE_COMPLETE
                 return ComThreadState.RESPONSE_COMPLETE
-            else:
-                return ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE
+            
+            return ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE
 
         if state == ComThreadState.RESPONSE_COMPLETE:
             
