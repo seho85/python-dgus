@@ -32,6 +32,7 @@ from os import listdir, stat
 from os.path import join, basename
 import re
 from sys import argv
+import sys
 
 @dataclass
 class FlashFile:
@@ -39,8 +40,8 @@ class FlashFile:
     start : int
     end : int
 
-    def __init__(self, file_name, start, end) -> None:
-        self.file_name = file_name
+    def __init__(self, filename, start, end) -> None:
+        self.file_name = filename
         self.start = start
         self.end = end
 
@@ -70,7 +71,7 @@ def print_usage():
 if len(argv) != 2:
     print("Invalid parameters!\n")
     print_usage()
-    exit()
+    sys.exit()
 
 dwin_folder = argv[1]
 

@@ -54,3 +54,4 @@ class OverviewDisplayMask(Mask):
         self.data += 1
 
         return self.data.to_bytes(length=2, byteorder='big')
+        

@@ -51,7 +51,7 @@ class DataVariable(Control):
         self.CONFIG_LENGTH)
 
         self.com_interface = comInterface
-        self.get_control_data_cb = self.get_control_data
+        #self.get_control_data_cb = self.default_get_control_data_cb
 
 
     def get_read_config_request(self):
@@ -116,9 +116,8 @@ class DataVariable(Control):
         return build_write_vp(self.data_address, data_bytes)
 
 
-    def get_control_data(self) -> bytes:
-        #TODO Renintroduce callback
-        return bytes()
+    #def default_get_control_data_cb(self) -> bytes:
+    #    return bytes()
 
     
     # DGUSDisplayControl implementation
@@ -142,6 +141,7 @@ class DataVariable(Control):
     def data_was_send(self, response):
         self.waiting_for_data_response = False
 
+    '''
     def settings_from_json(self):
         pass
 
@@ -159,3 +159,4 @@ class DataVariable(Control):
             "unitString" : self.unit_string
         }
         return settings_json
+    '''

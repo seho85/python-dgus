@@ -37,7 +37,7 @@ class ControlTypeEnum(Enum):
 
         return serialization_repr.get(control_type, "Undefined!")
 
-class Control(JsonSerializable, metaclass=abc.ABCMeta):
+class Control(metaclass=abc.ABCMeta):
     get_control_data_cb : Callable[..., bytes]
 
     data_address : int
@@ -86,6 +86,7 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
     def send_data(self):
         pass
 
+    """
     @abc.abstractmethod
     def settings_from_json(self):
         pass
@@ -93,6 +94,7 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def settings_to_json(self):
         pass
+
 
 
     def from_json(self, json_data):
@@ -111,3 +113,4 @@ class Control(JsonSerializable, metaclass=abc.ABCMeta):
         }
 
         return control_json
+    """

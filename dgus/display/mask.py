@@ -42,8 +42,8 @@ class Mask(JsonSerializable):
             ctrl.send_data()
 
 
-    def from_json(self, json):
-        mask_object = json.get("mask")
+    def from_json(self, json_data):
+        mask_object = json_data.get("mask")
         if mask_object is None:
             print("Malformed Mask JSON: 'mask' object not found!")
             return False
@@ -131,11 +131,9 @@ class Mask(JsonSerializable):
 
     def mask_shown(self):
         print(f"Mask {self.mask_no} is now shown")
-        pass
+        
 
     def mask_suppressed(self):
         print(f'Mask {self.mask_no} is now suppressed')
-        pass
-
-
-            
+        
+          

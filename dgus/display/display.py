@@ -15,6 +15,7 @@
  # along with this program. If not, see <http://www.gnu.org/licenses/>.
  #
 
+from queue import LifoQueue
 from typing import Any, Callable
 from dgus.display.communication.communication_interface import SerialCommunication
 from dgus.display.communication.protocol import build_mask_switch_request
@@ -26,9 +27,9 @@ class Display():
     serial_communication_interface : SerialCommunication = None
     
     _active_mask : Mask = None
-    _previous_mask : Mask = None
-
-   
+    
+    previous_masks : LifoQueue = LifoQueue()
+    
     _display_masks : dict = {}
 
     def __init__(self, serial_communication_interface) -> None:
@@ -43,10 +44,16 @@ class Display():
         mask_index = int.from_bytes(mask_bytes,  byteorder='big')
 
         if mask_index == 0xFFFF:
-            if self._previous_mask is not None:
-                print(f'Switched to previous Mask index: {self._previous_mask.mask_no}')
-                self.switch_to_mask(self._previous_mask.mask_no)
-               
+            if(self.previous_masks.qsize() > 0):
+
+                print("Previous Masks:")
+                for m in self.previous_masks.queue:
+                    print(f'Mask {m.mask_no}')
+                print("------")
+
+                prev_mask = self.previous_masks.get()
+                self.switch_to_mask(prev_mask.mask_no, False)
+                   
         else:
             mask = self._display_masks.get(mask_index)
 
@@ -63,35 +70,39 @@ class Display():
     def _mask_switch_response(self, data):
         self._active_mask.mask_shown()
 
-    def switch_to_mask(self, mask_idx : int, previous_mask_idx : int = -1) -> bool:
+    def switch_to_mask(self, mask_idx : int, add_to_history : bool = True) -> bool:
         msk = self._display_masks.get(mask_idx)
-        mask_found = False
-        if msk is not None:
-            if self._active_mask is not None:
-                self._previous_mask = self._active_mask
-                self._active_mask.mask_suppressed()
 
-            self._active_mask = msk
-            req = Request(self._get_switch_mask_request, self._mask_switch_response, "Switch Image")
-            self.serial_communication_interface.queue_request(req)
-            mask_found = True
-
-        if previous_mask_idx >= 0:
-            prev_mask = self._display_masks.get(previous_mask_idx)
-            if prev_mask is not None:
-                self._previous_mask = prev_mask
-
-        if not mask_found:
+        if msk is None:
             print(f"Error: Can't switch to MaskNo {mask_idx}, no Mask found with the MaskNo {mask_idx}")
+            return False
+
+        
+
+        if add_to_history:
+            if self._active_mask is not None:
+                self.previous_masks.put(self._active_mask)
+                print(f"Added Mask {mask_idx} to history...")
+
             
-        return mask_found
+            
+        #print(f"Previous Masks {self.previous_masks.qsize()}:")
+        #for m in self.previous_masks.queue:
+        #    print(f'Mask {m.mask_no}')
+        #print("------")
+        if self._active_mask is not None:
+            self._active_mask.mask_suppressed()
+            
+        self._active_mask = msk
 
-
+        req = Request(self._get_switch_mask_request, self._mask_switch_response, "Switch Image")
+        self.serial_communication_interface.queue_request(req)
+            
+        return True
+            
     def _get_switch_mask_request(self):
         switch_mask_cmd = build_mask_switch_request(self._active_mask.mask_no)
         return switch_mask_cmd
-
-
 
     def read_config_data_for_all_controls(self):
         ##TODO: Check if serial_comm_interface is running - when if not we run into while true forever
@@ -121,8 +132,6 @@ class Display():
     def update_current_mask(self):
         for ctrl in self._active_mask.controls:
             ctrl.send_data()
-
-
 
 
     #TODO: Move to communication_interface

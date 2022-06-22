@@ -54,21 +54,14 @@ class TextVariable(Control):
 
         self.com_interface = comInterface
 
-    
-        
-
     def text_data_set_response(self, data):
         self.waiting_for_data_response = False
-        pass
-
-           
 
     def get_text_data_set_request(self):
         string_bytes = self.get_control_data_cb()
         
         req_bytes = build_write_vp(self.data_address, string_bytes)
         return req_bytes
-        
     
     def parse_read_config_data_response(self, response_data : bytes):
 
@@ -166,6 +159,7 @@ class TextVariable(Control):
     def data_was_send(self, response):
         self.waiting_for_data_response = False
 
+    '''
     def settings_from_json(self):
         pass
 
@@ -189,3 +183,4 @@ class TextVariable(Control):
         }
 
         return settings_json
+    '''

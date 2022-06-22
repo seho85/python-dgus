@@ -1,8 +1,9 @@
 from setuptools import find_packages, setup
+
 setup(
     name='libdgus',
-    packages=find_packages(include=['dgus*']),
-    version='0.0.2',
+    packages=find_packages(include=['dgus*', 'sample*']),
+    version='0.0.4',
     description='Library to control DGUS Displays',
     author='Sebastian Holzgreve',
     license='GPLv3',
