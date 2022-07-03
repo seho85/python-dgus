@@ -23,7 +23,7 @@ from dgus.display.controls.text_variable import TextVariable
 from dgus.display.serialization.json_serializable import JsonSerializable
 class Mask(JsonSerializable):
 
-    controls = list[Control]
+    controls = list
     _com_interface : SerialCommunication = None
     mask_no : int = 0
 
