@@ -63,11 +63,6 @@ class DataVariable(Control):
 
         unpacked_data = unpack(">H H H H B B B B B B B 11s", data)
 
-        
-
-        #print("ConfigData:")
-        #print(unpacked_data)
-
         self.data_address = unpacked_data[0]
         self.x_pos = unpacked_data[1]
         self.y_pos = unpacked_data[2]
@@ -86,7 +81,7 @@ class DataVariable(Control):
 
        
     def write_config_async(self):
-        req = Request(self.build_write_config_request, None, "DataVariable: ReadConfig")
+        req = Request(self.build_write_config_request, None, f"DataVariable - Write Config Data - Address: {hex(self.config_address)}")
         self.com_interface.queue_request(req)
 
     def build_write_config_request(self):
@@ -123,18 +118,18 @@ class DataVariable(Control):
     # DGUSDisplayControl implementation
     def _read_config_data_implementation(self):
         req = Request(self.get_read_config_request, self.set_config_data_from_response,
-        "DataVariable: ReadConfig" )
+        f"DataVariable - Read Config Data - Address: {hex(self.config_address)}" )
         
         self.com_interface.queue_request(req)
 
        
     def _send_config_data_implementation(self):
-        set_config_req = Request(self.build_write_config_request, None, "DataVariable SetConfig")
+        set_config_req = Request(self.build_write_config_request, None, f"DataVariable - Write Config Data - Address: {hex(self.config_address)}")
         self.com_interface.queue_request(set_config_req)
    
     def send_data(self):
         if not self.waiting_for_data_response:
-            req = Request(self.get_set_value_request, self.data_was_send, "DataVariable: Write Data")
+            req = Request(self.get_set_value_request, self.data_was_send, f"DataVariable - Write Data - Address: {hex(self.data_address)}")
             self.waiting_for_data_response = True
             self.com_interface.queue_request(req)
         

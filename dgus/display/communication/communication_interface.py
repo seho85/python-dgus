@@ -15,6 +15,7 @@
  # along with this program. If not, see <http://www.gnu.org/licenses/>.
  #
 
+
 from collections import defaultdict
 from concurrent.futures import thread
 from enum import Enum
@@ -30,6 +31,9 @@ from serial import Serial, SerialException
 from dgus.display.communication.dgus_cmd import DGUSCmd
 from dgus.display.communication.request import Request
 from dgus.display.serialization.json_serializable import JsonSerializable
+
+
+import logging
 
 RESERVED_MEMORY_ADDRESS = 0x0FFF
 READ_RESPONSE_SLEEP = 0.02
@@ -59,9 +63,8 @@ class SerialCommunication(JsonSerializable):
     _time_send = 0
 
     _run_com_thread = False
-
-    show_transmission_data = False
-
+    
+    logger = logging.getLogger(__name__)
 
     def __init__(self, serial_port : str, baudrate : int = 115200) -> None:
         self._ser.port = serial_port
@@ -79,7 +82,7 @@ class SerialCommunication(JsonSerializable):
             self._ser.open()
             return True
         except SerialException:
-            print(f"Opening Serial Interface: {self._ser.port} failed!")
+            self.logger.error("Unable to open serial interface %s", self._ser.port)
             return False
 
     def start_com_thread(self):
@@ -87,7 +90,7 @@ class SerialCommunication(JsonSerializable):
             self._com_thread = threading.Thread(target=self._com_thread_function)
             self._run_com_thread = True
             self._com_thread.start()
-            print("Started serial display communication...")
+            self.logger.info("Started serial communication...")
             return True
         return False
 
@@ -95,7 +98,7 @@ class SerialCommunication(JsonSerializable):
         if self._run_com_thread:
             self._run_com_thread = False
             self._com_thread.join()
-            print("Stopped serial display communication...")
+            self.logger.info("Stopped serial display communication...")
 
     def _com_thread_function(self):
 
@@ -108,18 +111,17 @@ class SerialCommunication(JsonSerializable):
 
     def _do_serial_communication(self, state: ComThreadState) -> ComThreadState:
         if state == ComThreadState.SEND_REQUEST:
-            #print("SEND_REQUEST")
             self._time_send = time()
             with self._mutex:
                 if self.requests.empty():
                     return ComThreadState.WAIT_FOR_NEW_RESPONSE
 
                 self._current_request = self.requests.get()
-                # print("processing: " + currentRequest.name)
                 req_bytes = self._current_request.get_request_data()
-                if self.show_transmission_data:
-                    print("--> ", end='')
-                    print([hex(x) for x in req_bytes])
+
+                self.logger.info("Sending Request '%s'", self._current_request.name)
+                self.logger.debug('Tx: %s', [hex(x) for x in req_bytes])
+                
                 self._ser.write(req_bytes)
                 self._time_send = time()
                 return ComThreadState.WAIT_FOR_NEW_RESPONSE
@@ -127,7 +129,6 @@ class SerialCommunication(JsonSerializable):
             
 
         if state == ComThreadState.WAIT_FOR_NEW_RESPONSE:
-            #print("WAIT_FOR_NEW_RESPONSE")
             if self._ser.in_waiting >= 3:
                 header_data = self._ser.read(3)
                 self._awaited_bytes = header_data[2]
@@ -142,7 +143,6 @@ class SerialCommunication(JsonSerializable):
 
 
         if state == ComThreadState.WAIT_FOR_RESPONSE_TO_COMPLETE:
-            #print("WAIT_FOR_RESPONSE_TO_COMPLETE")
             if self._ser.in_waiting >= self._awaited_bytes:
                 data_read = self._ser.read(self._awaited_bytes)
                 self._response_buffer.extend(data_read)
@@ -156,27 +156,31 @@ class SerialCommunication(JsonSerializable):
             function = self._response_buffer[3]
             address = int.from_bytes(self._response_buffer[4:6], byteorder='big', signed=False)
 
-            # print(f"function: {function}")
-            # print(f"address:  {address}")
-            if self.show_transmission_data:
-                print("<-- ", end='')
-                print([hex(x) for x in self._response_buffer])
+            
 
+            
+            
             
             if function == DGUSCmd.READ_VPS:
                 if address <= RESERVED_MEMORY_ADDRESS:
                     # we got a spontanous data transmission in between, 
                     # handle it an jump back to reading
-                    self._spontaneous_message_received(bytearray(self._response_buffer))
+                    data_copy = bytes(self._response_buffer)
+                    
+
+                    self._spontaneous_message_received(data_copy)
                     self._response_buffer.clear()
                     state = ComThreadState.WAIT_FOR_NEW_RESPONSE
                     return state
             # TODO: Add checking for confirmation message
             if self._current_request is not None:
+                self.logger.info("Received response for '%s'", self._current_request.name)
+                self.logger.debug('Rx: %s', [hex(x) for x in self._response_buffer])
+                self.logger.info("Calling ResponseCallback: '%s'", self._current_request.response_callback)
                 if self._current_request.response_callback is not None:
                     data_copy = bytes(self._response_buffer)
                     self._current_request.response_callback(data_copy)
-
+            #TODO: Add Warning when data is received when current request is None, and which is not a spontanous transmission
             self._response_buffer.clear()
             self._current_request = None 
             return ComThreadState.SEND_REQUEST
@@ -186,17 +190,21 @@ class SerialCommunication(JsonSerializable):
 
     
     def _spontaneous_message_received(self, resp : bytes):
-        print("Spontanous -->", end='')
-        print([hex(x) for x in resp])
+        self.logger.info("Received Spontanous data")
+        self.logger.debug('Rx: %s', [hex(x) for x in resp])        
+
         address = int.from_bytes(resp[4:6], byteorder='big', signed=False)
 
         callbacks = self._spontaneous_callbacks.get(address, None)
         if callbacks is not None:
+            self.logger.info("Calling registered callbacks for address %s", address)
+            self.logger.debug('Callbacks: %s', callbacks)#[x for x in callbacks])        
             for callback in callbacks:
                 callback(resp)
        
     def register_spontaneous_callback(self, address : int, callback : Callable[[bytes], Any]):
         self._spontaneous_callbacks[address].append(callback)
+        self.logger.info("Spontanous callback '%s' for address %s registered", callback, address)
 
 
     # JSONSerializable implementation
@@ -204,17 +212,16 @@ class SerialCommunication(JsonSerializable):
         com_interface_object = json_data.get("com_interface")
 
         if com_interface_object is None:
-            print("Malformed ComInterface.json: 'com_interface' entry missing!")
+            self.logger.error("JSON deserialization failed: JSON data doesn't contain 'com_interface' object!")
             return False
 
         serial_port_object = com_interface_object.get("serial_port")
 
         if serial_port_object is None:
-            print("Malformed ComInterface.json: 'serial_port' entry missing!")
+            self.logger.error("JSON deserialization failed: JSON data doesn't contain 'serial_port' element!")
             return False
         
         self._ser.setPort(serial_port_object)
-        
         return True
 
     def to_json(self):

@@ -16,6 +16,50 @@
  # along with this program. If not, see <http://www.gnu.org/licenses/>.
  #
  
+
+'''
+import logging.config
+
+DEFAULT_LOGGING = {
+
+        'version': 1,
+        'disable_existing_loggers': False,
+        "root":{
+            "handlers" : ["console1"],
+            "level": "DEBUG"
+        },
+        'loggers': {
+            '': {
+                'level': 'INFO',
+            },
+            'dgus.display.communication.communication_interface': {
+                'handlers' : [ 'console1' ],
+                'propagate' : False,
+                'level' : 'DEBUG'
+            },
+        },
+        'handlers' : {
+          'console1' : {
+              'formatter' : 'std_out1',
+              'class' : 'logging.StreamHandler',
+              'level' : 'DEBUG'
+          }
+        },
+        'formatters' : {
+            'std_out1' : {
+                'format' : '%(asctime)s : %(levelname)-5s : %(name)s : %(funcName)s : %(message)s',
+                'datefmt' : '%Y-%m-%d %I:%M:%S'
+            }
+        }
+}
+
+logging.config.dictConfig(DEFAULT_LOGGING)
+'''
+
+from dgus.display.dgus_logger import configure_logger
+
+configure_logger()
+
 from time import sleep
 from overview_display_mask import OverviewDisplayMask
 from dgus.display.communication.communication_interface import SerialCommunication
