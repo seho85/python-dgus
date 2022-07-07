@@ -15,6 +15,7 @@
  # along with this program. If not, see <http://www.gnu.org/licenses/>.
  #
 
+import logging
 from queue import LifoQueue
 from typing import Any, Callable
 from dgus.display.communication.communication_interface import SerialCommunication
@@ -31,6 +32,7 @@ class Display():
     previous_masks : LifoQueue = LifoQueue()
     
     _display_masks : dict = {}
+    logger = logging.getLogger(__name__)
 
     def __init__(self, serial_communication_interface) -> None:
         self.act_mask_idx = 0
@@ -43,24 +45,31 @@ class Display():
         mask_bytes = data[7:]
         mask_index = int.from_bytes(mask_bytes,  byteorder='big')
 
-        if mask_index == 0xFFFF:
+        self.logger.info("Spontanous 'Change Display Mask' to MaskNo: %s'", mask_index)
+
+        show_previous_mask = mask_index == 0xFFFF
+
+        if show_previous_mask:
+            
             if(self.previous_masks.qsize() > 0):
 
-                print("Previous Masks:")
-                for m in self.previous_masks.queue:
-                    print(f'Mask {m.mask_no}')
-                print("------")
-
                 prev_mask = self.previous_masks.get()
+
+                self.logger.info("Switching to previous Mask %s", prev_mask.mask_no)
+                
                 self.switch_to_mask(prev_mask.mask_no, False)
+
+            else:
+                self.logger.warning("Switch to previous mask: No mask in history!")
                    
         else:
             mask = self._display_masks.get(mask_index)
 
             if mask is not None:
+                self.logger.info("Switching to Mask %s", mask_index)
                 self.switch_to_mask(mask_index)
             else:
-                print(f'Warning: No DisplayMask for Index {mask_index} registered')
+                self.logger.warning("No Mask register with for maskNo %s", mask_index)
 
 
     def add_mask(self, msk : Mask):
@@ -74,7 +83,7 @@ class Display():
         msk = self._display_masks.get(mask_idx)
 
         if msk is None:
-            print(f"Error: Can't switch to MaskNo {mask_idx}, no Mask found with the MaskNo {mask_idx}")
+            self.logger.error("Can't switch to MaskNo %s, no Mask found with the MaskNo %s", mask_idx, mask_idx)
             return False
 
         
@@ -82,20 +91,15 @@ class Display():
         if add_to_history:
             if self._active_mask is not None:
                 self.previous_masks.put(self._active_mask)
-                print(f"Added Mask {mask_idx} to history...")
+                self.logger.debug("Add MaskNo %s to Mask history", mask_idx)
 
-            
-            
-        #print(f"Previous Masks {self.previous_masks.qsize()}:")
-        #for m in self.previous_masks.queue:
-        #    print(f'Mask {m.mask_no}')
-        #print("------")
+
         if self._active_mask is not None:
             self._active_mask.mask_suppressed()
             
         self._active_mask = msk
 
-        req = Request(self._get_switch_mask_request, self._mask_switch_response, "Switch Image")
+        req = Request(self._get_switch_mask_request, self._mask_switch_response, f"Display - Switch to Image {mask_idx}")
         self.serial_communication_interface.queue_request(req)
             
         return True

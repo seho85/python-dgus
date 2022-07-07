@@ -94,9 +94,6 @@ class TextVariable(Control):
 
         self.config_data_has_been_read = True
 
-        #print([hex(x) for x in data])
-
-
 
     def build_read_config_request(self):
         req_data = build_read_vp(self.config_address, self.CONFIG_LENGTH)
@@ -136,22 +133,23 @@ class TextVariable(Control):
     #DGUSDisplayControl Implementation
    
     def _read_config_data_implementation(self):
-        req = Request(self.build_read_config_request, self.parse_read_config_data_response, "read Config")
+        req = Request(self.build_read_config_request, self.parse_read_config_data_response, 
+        f"TextVariable - Read Config Data - Address: {hex(self.config_address)}")
         self.com_interface.queue_request(req)
 
     def _send_config_data_implementation(self):
-        send_config_req = Request(self.build_write_config_request, None, "TextVariable SetConfig")
+        send_config_req = Request(self.build_write_config_request, None, 
+        f"TextVariable - Write Config Data - Address: {hex(self.config_address)}")
         self.com_interface.queue_request(send_config_req)
 
 
     def set_config_performed_callback(self, data):
-        #print("setConfigPerformedCB....")
-        #print([hex(x) for x in data])
         pass
    
     def send_data(self):
         if not self.waiting_for_data_response:
-            req = Request(self.get_text_data_set_request, self.text_data_set_response, "updateText")
+            req = Request(self.get_text_data_set_request, self.text_data_set_response,
+            f"TextVariable - Write Data - Address: {hex(self.data_address)}")
             self.waiting_for_data_response = True
             self.com_interface.queue_request(req)
 
@@ -159,28 +157,3 @@ class TextVariable(Control):
     def data_was_send(self, response):
         self.waiting_for_data_response = False
 
-    '''
-    def settings_from_json(self):
-        pass
-
-    def settings_to_json(self):
-        settings_json = {
-            "x" : self.x_pos,
-            "y" : self.y_pos,
-            "color" : self.color,
-            "upper_left_x" : self.upperleft_x,
-            "upper_left_y" : self.upperleft_y,
-            "lower_right_x" : self.lowerright_x,
-            "lower_right_y" : self.lowerright_y,
-            "text_length" : self.text_length,
-            "font0_id" :  self.font0_id,
-            "font1_id" : self.font1_id,
-            "font_width" : self.font_width,
-            "font_height" : self.font_height,
-            "encode_mode" : self.encode_mode,
-            "horizontal_distance" : self.hor_dis,
-            "vertical_distance" : self.ver_dis,
-        }
-
-        return settings_json
-    '''
