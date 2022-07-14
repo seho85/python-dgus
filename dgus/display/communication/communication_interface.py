@@ -234,13 +234,22 @@ class SerialCommunication(JsonSerializable):
         return com_interface_json
     
     def write_json_config(self):
-        serial_config_json_file = os.path.join(os.getcwd(), "..", "config", "serial_config.json")
+        try:
+            serial_config_json_file = os.path.join(os.getcwd(), "..", "config", "serial_config.json")
 
-        with open(serial_config_json_file, "w") as json_file:
-            json_file.write(json.dumps(self.to_json(), indent=3))
+            with open(serial_config_json_file, "w") as json_file:
+                json_file.write(json.dumps(self.to_json(), indent=3))
+                
+        except FileNotFoundError:
+            self.logger.critical("Could not open: %s", serial_config_json_file)
+        
 
     def read_json_config(self):
-        serial_config_json_file = os.path.join(os.getcwd(), "..", "config", "serial_config.json")
-        with open(serial_config_json_file) as json_file:
-            json_data = json.load(json_file)
-            return self.from_json(json_data)
+        try:
+            serial_config_json_file = os.path.join(os.getcwd(), "..", "config", "serial_config.json")
+            with open(serial_config_json_file) as json_file:
+                json_data = json.load(json_file)
+                return self.from_json(json_data)
+        except FileNotFoundError:
+            self.logger.critical("Could not open: %s", serial_config_json_file)
+            return False
