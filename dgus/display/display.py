@@ -79,7 +79,7 @@ class Display():
     def _mask_switch_response(self, data):
         self._active_mask.mask_shown()
 
-    def switch_to_mask(self, mask_idx : int, add_to_history : bool = True) -> bool:
+    def switch_to_mask(self, mask_idx : int, add_previous_mask_to_history : bool = True) -> bool:
         msk = self._display_masks.get(mask_idx)
 
         if msk is None:
@@ -88,7 +88,7 @@ class Display():
 
         
 
-        if add_to_history:
+        if add_previous_mask_to_history:
             if self._active_mask is not None:
                 self.previous_masks.put(self._active_mask)
                 self.logger.debug("Add MaskNo %s to Mask history", mask_idx)
@@ -110,32 +110,34 @@ class Display():
 
     def read_config_data_for_all_controls(self):
         ##TODO: Check if serial_comm_interface is running - when if not we run into while true forever
-
-        for msk in self._display_masks.values():
-            for ctrl in msk.controls:
-                ctrl.config_data_has_been_read = False
-                ctrl.read_config_data()
-
-        
-        while True:
-            all_config_has_been_read = True
-
+        if self._active_mask is not None:
             for msk in self._display_masks.values():
                 for ctrl in msk.controls:
-                    if not ctrl.config_data_has_been_read:
-                        all_config_has_been_read = False
+                    ctrl.config_data_has_been_read = False
+                    ctrl.read_config_data()
 
-            if all_config_has_been_read:
-                break
+            
+            while True:
+                all_config_has_been_read = True
+
+                for msk in self._display_masks.values():
+                    for ctrl in msk.controls:
+                        if not ctrl.config_data_has_been_read:
+                            all_config_has_been_read = False
+
+                if all_config_has_been_read:
+                    break
 
     def write_config_data_for_all_controls(self):
-        for msk in self._display_masks.values():
-            for ctrl in msk.controls:
-                ctrl.send_config_data()
+        if self._active_mask is not None:
+            for msk in self._display_masks.values():
+                for ctrl in msk.controls:
+                    ctrl.send_config_data()
 
     def update_current_mask(self):
-        for ctrl in self._active_mask.controls:
-            ctrl.send_data()
+        if self._active_mask is not None:
+            for ctrl in self._active_mask.controls:
+                ctrl.send_data()
 
 
     #TODO: Move to communication_interface
