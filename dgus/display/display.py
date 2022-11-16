@@ -143,3 +143,7 @@ class Display():
     #TODO: Move to communication_interface
     def register_spontaneous_response_cb(self, address : int, callback : Callable[[bytes], Any]):
         self.serial_communication_interface.register_spontaneous_callback(address, callback)
+
+
+    def get_active_mask(self):
+        return self._active_mask

@@ -19,7 +19,6 @@
 from collections import defaultdict
 from concurrent.futures import thread
 from enum import Enum
-import os
 import json
 
 import queue
@@ -63,6 +62,10 @@ class SerialCommunication(JsonSerializable):
     _time_send = 0
 
     _run_com_thread = False
+
+    _com_opened = False
+
+    _serial_port_com_event_changed_receiver : Callable[[bool], Any] = None
     
     logger = logging.getLogger(__name__)
 
@@ -80,13 +83,17 @@ class SerialCommunication(JsonSerializable):
     def _open_com_port(self) -> bool:
         try:
             self._ser.open()
+
+            if  self._serial_port_com_event_changed_receiver is not None:
+                 self._serial_port_com_event_changed_receiver(True)
             return True
         except SerialException:
-            self.logger.error("Unable to open serial interface %s", self._ser.port)
+            #self.logger.error("Unable to open serial interface %s", self._ser.port)
             return False
 
     def start_com_thread(self):
-        if self._open_com_port():
+        self._com_opened = self._open_com_port()
+        if self._com_opened:
             self._com_thread = threading.Thread(target=self._com_thread_function)
             self._run_com_thread = True
             self._com_thread.start()
@@ -105,7 +112,32 @@ class SerialCommunication(JsonSerializable):
         state = ComThreadState.SEND_REQUEST
 
         while self._run_com_thread:
-            state = self._do_serial_communication(state)
+
+            if self._com_opened:
+                try:
+                    state = self._do_serial_communication(state)
+                except OSError as error:
+                    if error.errno == 5:
+                        print('An exception occurred: {}'.format(error))
+                        self._com_opened = False
+                        self._ser.cancel_read()
+                        self._ser.cancel_write()
+                        self._ser.close()
+
+            else:
+                try:
+                    self._com_opened = self._open_com_port()
+
+                    if self._com_opened == False:
+                        sleep(2)
+                    else:
+                        state = ComThreadState.SEND_REQUEST
+                        self._response_buffer.clear()
+
+                except OSError as error:
+                    sleep(1)
+
+                
 
             #sleep(0.2)
 
@@ -233,10 +265,8 @@ class SerialCommunication(JsonSerializable):
 
         return com_interface_json
     
-    def write_json_config(self):
+    def write_json_config(self, serial_config_json_file):
         try:
-            serial_config_json_file = os.path.join(os.getcwd(), "..", "config", "serial_config.json")
-
             with open(serial_config_json_file, "w") as json_file:
                 json_file.write(json.dumps(self.to_json(), indent=3))
                 
@@ -244,12 +274,12 @@ class SerialCommunication(JsonSerializable):
             self.logger.critical("Could not open: %s", serial_config_json_file)
         
 
-    def read_json_config(self):
+    def read_json_config(self, serial_config_json_file):
         try:
-            serial_config_json_file = os.path.join(os.getcwd(), "..", "config", "serial_config.json")
             with open(serial_config_json_file) as json_file:
                 json_data = json.load(json_file)
                 return self.from_json(json_data)
+                
         except FileNotFoundError:
             self.logger.critical("Could not open: %s", serial_config_json_file)
             return False

@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name='libdgus',
     packages=find_packages(include=['dgus*', 'sample*']),
-    version='0.0.4',
+    version='0.0.11',
     description='Library to control DGUS Displays',
     author='Sebastian Holzgreve',
     license='GPLv3',
